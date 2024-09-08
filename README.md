@@ -14,16 +14,18 @@
 ### Steps to execute the DB Scripts
 Run the below scripts in any of the software either in MySQL Workbench or in DBeaver
 
-* create-report-file-tracker-table-ddl.sql - It will create the database named as <strong>flux</strong>
-* create-report-process-tracker-table-ddl.sql - It will delete the database <strong>flux</strong> 
+* create_database_flux.sql - It will create the database named <strong>flux</strong>
+* drop_database_flux.sql - It will delete the database <strong>flux</strong>
 
 But don't run it before the create_database.sql, otherwise it will throw the error stating `No database is present with this name`
 
-* create_table.sql - It will create the table <strong>User</strong> under <strong>spring</strong> schema
+* create-report-process-tracker-table-ddl.sql - It will create the table named as <strong>report_process_tracker</strong>
+* create-report-file-tracker-table-ddl.sql - It will create the table named as <strong>report_file_tracker</strong>
 
-But though it is not required to execute, because when you run the application as Spring Boot and try to call the <strong>POST</strong> method it will automatically create the table <strong>User</strong> under <strong>spring</strong> database
+But though it is not required to execute, because when you run the application as Spring Boot and try to call the <strong>POST</strong> method it will automatically create the table <strong>report_process_tracker</strong>, <strong>report_file_tracker</strong> under <strong>flux</strong> database
 
-* drop_table.sql - To delete the <strong>User</strong> table
+* drop-report-file-tracker-table-ddl.sql - It will delete the table <strong>report_file_tracker</strong>
+* drop-report-process-tracker-table-ddl.sql - It will delete the table <strong>report_process_tracker</strong>
 
 ### Steps to clone and run the application
 * Install MySQL. Complete installation steps of [MySQL Workbench](https://www.sqlshack.com/how-to-install-mysql-database-server-8-0-19-on-windows-10/) are provided

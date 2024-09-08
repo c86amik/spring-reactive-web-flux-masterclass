@@ -13,24 +13,24 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "report_process_tracker")
-public class ReportProcessTracker {
+@Table(name = "report_file_tracker")
+public class ReportFileTracker {
 
     @Id
     @Column("ID")
     private BigInteger id;
 
+    @Column("REPORT_PROCESS_ID")
+    private String reportProcessId;
+
     @Column("TRACE_ID")
     private String traceId;
 
-    @Column("SERVICE_NAME")
-    private String serviceName;
+    @Column("FILE_NAME")
+    private String fileName;
 
-    @Column("PROCESS_NAME")
-    private String processName;
-
-    @Column("PATH")
-    private String path;
+    @Column("FILE_TYPE")
+    private String fileType;
 
     @Column("CREATED_BY")
     private String createdBy;

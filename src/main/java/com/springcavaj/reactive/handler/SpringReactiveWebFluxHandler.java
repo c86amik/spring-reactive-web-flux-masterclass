@@ -1,5 +1,6 @@
 package com.springcavaj.reactive.handler;
 
+import com.springcavaj.reactive.dto.ReportFileTrackerDTO;
 import com.springcavaj.reactive.dto.ReportProcessTrackerDTO;
 import com.springcavaj.reactive.entity.ReportProcessTracker;
 import com.springcavaj.reactive.service.SpringReactiveWebFluxService;
@@ -34,5 +35,19 @@ public class SpringReactiveWebFluxHandler {
     public Mono<ServerResponse> getAllReportProcessTrackers(ServerRequest serverRequest) {
         return  ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
                 .body(springReactiveWebFluxService.getAllReportProcessTrackers(), ReportProcessTrackerDTO.class);
+    }
+
+    public Mono<ServerResponse> createReportFileTracker(ServerRequest serverRequest) {
+        LOG.info("SpringReactiveWebFluxHandler -> createReportFileTracker() operation started");
+        return serverRequest.bodyToMono(ReportFileTrackerDTO.class)
+                .flatMap(reportFileTrackerDTO -> springReactiveWebFluxService.saveReportFileTracker(reportFileTrackerDTO))
+                .flatMap(savedReportFileTracker -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(fromValue(savedReportFileTracker)));
+    }
+
+    public Mono<ServerResponse> getAllReportFileTrackers(ServerRequest serverRequest) {
+        return  ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
+                .body(springReactiveWebFluxService.getAllReportFileTrackers(), ReportFileTrackerDTO.class);
     }
 }

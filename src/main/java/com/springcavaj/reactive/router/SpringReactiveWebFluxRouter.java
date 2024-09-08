@@ -18,8 +18,10 @@ public class SpringReactiveWebFluxRouter {
 
     @Bean
     public RouterFunction<ServerResponse> processTrackerRoutes(SpringReactiveWebFluxHandler springReactiveWebFluxHandler) {
-        return route(POST("flux/processTrackers"), springReactiveWebFluxHandler::createReportProcessTracker)
-                .andRoute(GET("/flux/processTrackers"), springReactiveWebFluxHandler::getAllReportProcessTrackers);
+        return route(POST("/flux/processTrackers"), springReactiveWebFluxHandler::createReportProcessTracker)
+                .andRoute(GET("/flux/processTrackers"), springReactiveWebFluxHandler::getAllReportProcessTrackers)
+                .andRoute(POST("/flux/fileTrackers"), springReactiveWebFluxHandler::createReportFileTracker)
+                .andRoute(GET("/flux/fileTrackers"), springReactiveWebFluxHandler::getAllReportFileTrackers);
     }
 
 }
