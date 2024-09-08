@@ -7,10 +7,7 @@ CREATE TABLE flux.report_process_tracker (
 	`PATH` varchar(100) NULL,
 	CREATED_TIMESTAMP TIMESTAMP NULL,
 	CREATED_BY varchar(50) NULL
-)
-ENGINE=InnoDB
-DEFAULT CHARSET=utf8mb4
-COLLATE=utf8mb4_0900_ai_ci;
+);
 
 -- ALTER Statement
 ALTER TABLE flux.report_process_tracker ADD CONSTRAINT report_process_tracker_pk PRIMARY KEY (ID);

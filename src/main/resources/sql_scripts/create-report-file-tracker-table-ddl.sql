@@ -7,10 +7,7 @@ CREATE TABLE flux.report_file_tracker (
 	FILE_TYPE varchar(10) NULL,
 	CREATED_TIMESTAMP TIMESTAMP NULL,
 	CREATED_BY varchar(50) NULL
-)
-ENGINE=InnoDB
-DEFAULT CHARSET=utf8mb4
-COLLATE=utf8mb4_0900_ai_ci;
+);
 
 --ALTER Statement
 ALTER TABLE flux.report_file_tracker ADD CONSTRAINT report_file_tracker_pk PRIMARY KEY (ID);
