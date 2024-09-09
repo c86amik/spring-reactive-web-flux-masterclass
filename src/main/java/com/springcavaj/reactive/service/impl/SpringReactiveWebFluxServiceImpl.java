@@ -2,6 +2,7 @@ package com.springcavaj.reactive.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.springcavaj.reactive.dto.ReportFileTrackerDTO;
+import com.springcavaj.reactive.dto.ReportProcessFileTrackerDTO;
 import com.springcavaj.reactive.dto.ReportProcessTrackerDTO;
 import com.springcavaj.reactive.entity.ReportFileTracker;
 import com.springcavaj.reactive.entity.ReportProcessTracker;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -55,6 +57,7 @@ public class SpringReactiveWebFluxServiceImpl implements SpringReactiveWebFluxSe
         reportProcessTrackerDTO.setId(processTracker.getId());
         reportProcessTrackerDTO.setTraceId(processTracker.getTraceId());
         reportProcessTrackerDTO.setServiceName(processTracker.getServiceName());
+        reportProcessTrackerDTO.setProcessName(processTracker.getProcessName());
         reportProcessTrackerDTO.setPath(processTracker.getPath());
         reportProcessTrackerDTO.setCreatedBy(processTracker.getCreatedBy());
         reportProcessTrackerDTO.setCreatedTime(processTracker.getCreatedTimestamp());
@@ -62,8 +65,9 @@ public class SpringReactiveWebFluxServiceImpl implements SpringReactiveWebFluxSe
     }
 
     @Override
-    public Mono<ReportProcessTracker> findByTraceId(String traceId) {
-        return null;
+    public Mono<ReportProcessTrackerDTO> findByReportProcessTrackerTraceId(String traceId) {
+        Mono<ReportProcessTracker> reportProcessTrackerMono = springReactiveWebFluxProcessTrackerRepository.findByTraceId(traceId);
+        return reportProcessTrackerMono.flatMap(reportProcessTracker -> convertToReportProcessTrackerDTO(reportProcessTracker));
     }
 
     @Override
@@ -97,5 +101,39 @@ public class SpringReactiveWebFluxServiceImpl implements SpringReactiveWebFluxSe
         return Mono.just(reportFileTrackerDTO);
     }
 
+    public Mono<ReportFileTrackerDTO> findByReportFileTrackerTraceId(String traceId) {
+        Mono<ReportFileTracker> reportFileTrackerMono = springReactiveWebFluxFileTrackerRepository.findByTraceId(traceId);
+        return reportFileTrackerMono.flatMap(reportFileTracker -> convertToReportFileTrackerDTO(reportFileTracker));
+    }
+
+    @Override
+    public Flux<ReportFileTrackerDTO> findReportFileTrackersByProcessId(String reportProcessId) {
+        Flux<ReportFileTracker> reportFileTrackerFlux = springReactiveWebFluxFileTrackerRepository.findByReportProcessId(reportProcessId);
+        return reportFileTrackerFlux
+                .flatMap(reportFileTracker -> convertToReportFileTrackerDTO(reportFileTracker));
+    }
+
+    @Override
+    public Mono<ReportProcessFileTrackerDTO> findReportProcessAndFileTrackerByProcessId(String reportProcessId) {
+        Flux<ReportFileTracker> reportFileTrackerFlux = springReactiveWebFluxFileTrackerRepository.findByReportProcessId(reportProcessId);
+        Flux<ReportFileTrackerDTO> reportFileTrackerDTOFlux = reportFileTrackerFlux
+                .flatMap(reportFileTracker -> convertToReportFileTrackerDTO(reportFileTracker));
+        Mono<ReportProcessTracker> reportProcessTrackerMono = springReactiveWebFluxProcessTrackerRepository.findByTraceId(reportProcessId);
+        Mono<ReportProcessTrackerDTO> reportProcessTrackerDTOMono = reportProcessTrackerMono
+                .flatMap(reportProcessTracker -> convertToReportProcessTrackerDTO(reportProcessTracker));
+        return reportProcessTrackerDTOMono.zipWith(
+                reportFileTrackerDTOFlux.collectList(),
+                (reportProcessTrackerDTO, reportFileTrackerDTO) -> new ReportProcessFileTrackerDTO(
+                        reportProcessTrackerDTO.getId(),
+                        reportProcessTrackerDTO.getTraceId(),
+                        reportProcessTrackerDTO.getServiceName(),
+                        reportProcessTrackerDTO.getProcessName(),
+                        reportProcessTrackerDTO.getPath(),
+                        reportProcessTrackerDTO.getCreatedBy(),
+                        reportProcessTrackerDTO.getCreatedTime(),
+                        reportFileTrackerDTO
+                )
+        );
+    }
 
 }

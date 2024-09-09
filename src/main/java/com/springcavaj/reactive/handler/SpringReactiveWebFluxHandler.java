@@ -1,8 +1,8 @@
 package com.springcavaj.reactive.handler;
 
 import com.springcavaj.reactive.dto.ReportFileTrackerDTO;
+import com.springcavaj.reactive.dto.ReportProcessFileTrackerDTO;
 import com.springcavaj.reactive.dto.ReportProcessTrackerDTO;
-import com.springcavaj.reactive.entity.ReportProcessTracker;
 import com.springcavaj.reactive.service.SpringReactiveWebFluxService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import static org.springframework.web.reactive.function.BodyInserters.fromValue;
@@ -49,5 +50,28 @@ public class SpringReactiveWebFluxHandler {
     public Mono<ServerResponse> getAllReportFileTrackers(ServerRequest serverRequest) {
         return  ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
                 .body(springReactiveWebFluxService.getAllReportFileTrackers(), ReportFileTrackerDTO.class);
+    }
+
+    public Mono<ServerResponse> getReportProcessTrackerByTraceId(ServerRequest serverRequest) {
+        return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
+                .body(springReactiveWebFluxService.findByReportProcessTrackerTraceId(serverRequest.pathVariable("traceId")), ReportProcessTrackerDTO.class);
+    }
+
+    public Mono<ServerResponse> getReportFileTrackerByTraceId(ServerRequest serverRequest) {
+        return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
+                .body(springReactiveWebFluxService.findByReportFileTrackerTraceId(serverRequest.pathVariable("traceId")), ReportFileTrackerDTO.class);
+    }
+
+    public Mono<ServerResponse> getReportFileTrackersByProcessId(ServerRequest serverRequest) {
+        Flux<ReportFileTrackerDTO> reportFileTrackerDTOFlux = springReactiveWebFluxService
+                .findReportFileTrackersByProcessId(serverRequest.pathVariable("reportProcessId"));
+        return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON)
+                .body(reportFileTrackerDTOFlux, ReportFileTrackerDTO.class);
+    }
+
+    public Mono<ServerResponse> getReportProcessFileTrackersByReportTraceId(ServerRequest serverRequest) {
+        return springReactiveWebFluxService.findReportProcessAndFileTrackerByProcessId(serverRequest.pathVariable("traceId"))
+                .flatMap(reportProcessFileTrackerDTO -> ServerResponse.ok().bodyValue(reportProcessFileTrackerDTO))
+                .switchIfEmpty(ServerResponse.notFound().build());
     }
 }

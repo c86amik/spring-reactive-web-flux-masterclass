@@ -1,6 +1,7 @@
 package com.springcavaj.reactive.service;
 
 import com.springcavaj.reactive.dto.ReportFileTrackerDTO;
+import com.springcavaj.reactive.dto.ReportProcessFileTrackerDTO;
 import com.springcavaj.reactive.dto.ReportProcessTrackerDTO;
 import com.springcavaj.reactive.entity.ReportFileTracker;
 import com.springcavaj.reactive.entity.ReportProcessTracker;
@@ -13,10 +14,11 @@ public interface SpringReactiveWebFluxService {
 
     public Mono<ReportProcessTracker> saveReportProcessTracker(ReportProcessTrackerDTO reportProcessTrackerDTO);
     public Flux<ReportProcessTrackerDTO> getAllReportProcessTrackers();
-    public Mono<ReportProcessTracker> findByTraceId(String traceId);
+    public Mono<ReportProcessTrackerDTO> findByReportProcessTrackerTraceId(String traceId);
     public Mono<ReportFileTracker> saveReportFileTracker(ReportFileTrackerDTO reportFileTrackerDTO);
     public Flux<ReportFileTrackerDTO> getAllReportFileTrackers();
-
-
+    public Mono<ReportFileTrackerDTO> findByReportFileTrackerTraceId(String traceId);
+    public Flux<ReportFileTrackerDTO> findReportFileTrackersByProcessId(String reportProcessId);
+    public Mono<ReportProcessFileTrackerDTO> findReportProcessAndFileTrackerByProcessId(String reportProcessId);
 
 }
