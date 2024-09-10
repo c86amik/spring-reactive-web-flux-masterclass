@@ -14,6 +14,8 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 import static org.springframework.web.reactive.function.BodyInserters.fromValue;
 
 @Component
@@ -73,5 +75,50 @@ public class SpringReactiveWebFluxHandler {
         return springReactiveWebFluxService.findReportProcessAndFileTrackerByProcessId(serverRequest.pathVariable("traceId"))
                 .flatMap(reportProcessFileTrackerDTO -> ServerResponse.ok().bodyValue(reportProcessFileTrackerDTO))
                 .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> getHistoricalRecords(ServerRequest serverRequest) {
+        return ServerResponse.ok().contentType(MediaType.APPLICATION_JSON).body(springReactiveWebFluxService.getHistoricalRecords(), ReportProcessFileTrackerDTO.class)
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> getReportProcessAndFileTrackersInPDF(ServerRequest serverRequest) {
+        return springReactiveWebFluxService.generatePDFForReportProcessFileTracker()
+                .flatMap(pdfBytes -> ServerResponse.ok()
+                        .header("Content-Disposition", "attachment; filename=Process_File_Tracker_Summary_Report.pdf")
+                        .header("Content-Type", "application/pdf")
+                        .bodyValue(pdfBytes))
+                .onErrorResume(exception -> ServerResponse.status(500).bodyValue("Error Generating PDF: " + exception.getMessage()));
+    }
+
+    public Mono<ServerResponse> updateReportProcessTracker(ServerRequest serverRequest) {
+        LOG.info("SpringReactiveWebFluxHandler -> updateReportProcessTracker() operation started");
+        String traceId = serverRequest.pathVariable("traceId");
+        LOG.info("SpringReactiveWebFluxHandler -> updateReportProcessTracker() traceId : {}", traceId);
+        return serverRequest.bodyToMono(ReportProcessTrackerDTO.class)
+                .flatMap(reportProcessTrackerDTOOriginal -> springReactiveWebFluxService.findByReportProcessTrackerTraceId(traceId)
+                    .flatMap(reportProcessTrackerDTO -> {
+                        reportProcessTrackerDTO.setId(reportProcessTrackerDTOOriginal.getId());
+                        reportProcessTrackerDTO.setTraceId(reportProcessTrackerDTOOriginal.getTraceId());
+                        reportProcessTrackerDTO.setProcessName(reportProcessTrackerDTOOriginal.getProcessName());
+                        reportProcessTrackerDTO.setPath(reportProcessTrackerDTOOriginal.getPath());
+                        reportProcessTrackerDTO.setServiceName(reportProcessTrackerDTOOriginal.getServiceName());
+                        reportProcessTrackerDTO.setCreatedBy(reportProcessTrackerDTOOriginal.getCreatedBy());
+                        reportProcessTrackerDTO.setCreatedTime(reportProcessTrackerDTOOriginal.getCreatedTime());
+                        return springReactiveWebFluxService.saveReportProcessTracker(reportProcessTrackerDTO);
+                    })
+                ).flatMap(savedReportProcessTracker -> ServerResponse.ok()
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .body(fromValue(savedReportProcessTracker)))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> updateReportFileTracker(ServerRequest serverRequest) {
+        LOG.info("SpringReactiveWebFluxHandler -> updateReportFileTracker() operation started");
+        return serverRequest.bodyToMono(ReportFileTrackerDTO.class)
+                .flatMap(reportFileTrackerDTO -> springReactiveWebFluxService.saveReportFileTracker(reportFileTrackerDTO))
+                .flatMap(savedReportFileTracker -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(fromValue(savedReportFileTracker)));
     }
 }

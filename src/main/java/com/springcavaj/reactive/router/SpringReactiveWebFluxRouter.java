@@ -25,7 +25,11 @@ public class SpringReactiveWebFluxRouter {
                 .andRoute(GET("/flux/processTracker/{traceId}"), springReactiveWebFluxHandler::getReportProcessTrackerByTraceId)
                 .andRoute(GET("/flux/fileTracker/{traceId}"), springReactiveWebFluxHandler::getReportFileTrackerByTraceId)
                 .andRoute(GET("/flux/fileTrackers/{reportProcessId}"), springReactiveWebFluxHandler::getReportFileTrackersByProcessId)
-                .andRoute(GET("flux/processFileTrackers/{traceId}"), springReactiveWebFluxHandler::getReportProcessFileTrackersByReportTraceId);
+                .andRoute(GET("/flux/processFileTrackers/{traceId}"), springReactiveWebFluxHandler::getReportProcessFileTrackersByReportTraceId)
+                .andRoute(GET("/flux/history"), springReactiveWebFluxHandler::getHistoricalRecords)
+                .andRoute(GET("/flux/generatePDF"), springReactiveWebFluxHandler::getReportProcessAndFileTrackersInPDF)
+                .andRoute(PUT("/flux/updateProcessTracker/{traceId}"), springReactiveWebFluxHandler::updateReportProcessTracker)
+                .andRoute(PUT("/flux/updateFileTracker"), springReactiveWebFluxHandler::updateReportFileTracker);
     }
 
 }

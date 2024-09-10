@@ -20,5 +20,6 @@ public interface SpringReactiveWebFluxService {
     public Mono<ReportFileTrackerDTO> findByReportFileTrackerTraceId(String traceId);
     public Flux<ReportFileTrackerDTO> findReportFileTrackersByProcessId(String reportProcessId);
     public Mono<ReportProcessFileTrackerDTO> findReportProcessAndFileTrackerByProcessId(String reportProcessId);
-
+    public Flux<ReportProcessFileTrackerDTO> getHistoricalRecords();
+    public Mono<byte[]> generatePDFForReportProcessFileTracker();
 }

@@ -9,14 +9,15 @@ import com.springcavaj.reactive.entity.ReportProcessTracker;
 import com.springcavaj.reactive.repository.SpringReactiveWebFluxFileTrackerRepository;
 import com.springcavaj.reactive.repository.SpringReactiveWebFluxProcessTrackerRepository;
 import com.springcavaj.reactive.service.SpringReactiveWebFluxService;
+import com.springcavaj.reactive.utility.ReportProcessFilePDFGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -32,15 +33,27 @@ public class SpringReactiveWebFluxServiceImpl implements SpringReactiveWebFluxSe
     @Autowired
     private SpringReactiveWebFluxFileTrackerRepository springReactiveWebFluxFileTrackerRepository;
 
+    @Autowired
+    private ReportProcessFilePDFGenerator reportProcessFilePDFGenerator;
+
     @Override
     public Mono<ReportProcessTracker> saveReportProcessTracker(ReportProcessTrackerDTO reportProcessTrackerDTO) {
         ReportProcessTracker reportProcessTracker = new ReportProcessTracker();
-        reportProcessTracker.setTraceId(UUID.randomUUID().toString());
+        if(null != reportProcessTrackerDTO.getId()) {
+            reportProcessTracker.setId(reportProcessTrackerDTO.getId());
+        }
+        if (StringUtils.hasText(reportProcessTrackerDTO.getTraceId())) {
+            reportProcessTracker.setTraceId(reportProcessTrackerDTO.getTraceId());
+        } else {
+            reportProcessTracker.setTraceId(UUID.randomUUID().toString());
+        }
         reportProcessTracker.setProcessName(reportProcessTrackerDTO.getProcessName());
         reportProcessTracker.setServiceName(reportProcessTrackerDTO.getServiceName());
         reportProcessTracker.setPath(reportProcessTrackerDTO.getPath());
         reportProcessTracker.setCreatedBy(reportProcessTrackerDTO.getCreatedBy());
-        reportProcessTracker.setCreatedTimestamp(LocalDateTime.now());
+        reportProcessTracker.setCreatedTimestamp(
+                (null != reportProcessTrackerDTO.getCreatedTime() ? reportProcessTrackerDTO.getCreatedTime()
+                        : LocalDateTime.now()));
         return springReactiveWebFluxProcessTrackerRepository.save(reportProcessTracker);
     }
 
@@ -135,5 +148,19 @@ public class SpringReactiveWebFluxServiceImpl implements SpringReactiveWebFluxSe
                 )
         );
     }
+
+    @Override
+    public Flux<ReportProcessFileTrackerDTO> getHistoricalRecords() {
+        return getAllReportProcessTrackers()
+                .flatMapSequential(reportProcessTrackerDTO ->
+                        findReportProcessAndFileTrackerByProcessId(reportProcessTrackerDTO.getTraceId()));
+    }
+
+    @Override
+    public Mono<byte[]> generatePDFForReportProcessFileTracker() {
+        return getHistoricalRecords().collectList()
+                .map(reportProcessFileTrackerDTO -> reportProcessFilePDFGenerator.createPDF(reportProcessFileTrackerDTO));
+    }
+
 
 }
