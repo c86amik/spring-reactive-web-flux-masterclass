@@ -29,7 +29,9 @@ public class SpringReactiveWebFluxRouter {
                 .andRoute(GET("/flux/history"), springReactiveWebFluxHandler::getHistoricalRecords)
                 .andRoute(GET("/flux/generatePDF"), springReactiveWebFluxHandler::getReportProcessAndFileTrackersInPDF)
                 .andRoute(PUT("/flux/updateProcessTracker/{traceId}"), springReactiveWebFluxHandler::updateReportProcessTracker)
-                .andRoute(PUT("/flux/updateFileTracker"), springReactiveWebFluxHandler::updateReportFileTracker);
+                .andRoute(PUT("/flux/updateFileTracker/{traceId}"), springReactiveWebFluxHandler::updateReportFileTracker)
+                .andRoute(DELETE("/flux/deleteFileTracker/{id}"), springReactiveWebFluxHandler::deleteReportFileTrackerByID)
+                .andRoute(DELETE("/flux/deleteProcessTracker/{id}"), springReactiveWebFluxHandler::deleteReportProcessTrackerByID);
     }
 
 }

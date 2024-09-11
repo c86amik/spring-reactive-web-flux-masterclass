@@ -13,4 +13,5 @@ public interface SpringReactiveWebFluxFileTrackerRepository extends ReactiveCrud
 
     Mono<ReportFileTracker> findByTraceId(String traceId);
     Flux<ReportFileTracker> findByReportProcessId(String reportProcessId);
+    Mono<Void> deleteAllByReportProcessId(String reportProcessId);
 }

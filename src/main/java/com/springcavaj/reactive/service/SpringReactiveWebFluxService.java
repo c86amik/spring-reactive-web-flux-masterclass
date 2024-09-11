@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigInteger;
+
 @Service
 public interface SpringReactiveWebFluxService {
 
@@ -22,4 +24,6 @@ public interface SpringReactiveWebFluxService {
     public Mono<ReportProcessFileTrackerDTO> findReportProcessAndFileTrackerByProcessId(String reportProcessId);
     public Flux<ReportProcessFileTrackerDTO> getHistoricalRecords();
     public Mono<byte[]> generatePDFForReportProcessFileTracker();
+    public Mono<Void> deleteReportFileTracker(BigInteger id);
+    public Mono<Void> deleteReportProcessTracker(BigInteger id);
 }

@@ -18,6 +18,7 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -51,9 +52,7 @@ public class SpringReactiveWebFluxServiceImpl implements SpringReactiveWebFluxSe
         reportProcessTracker.setServiceName(reportProcessTrackerDTO.getServiceName());
         reportProcessTracker.setPath(reportProcessTrackerDTO.getPath());
         reportProcessTracker.setCreatedBy(reportProcessTrackerDTO.getCreatedBy());
-        reportProcessTracker.setCreatedTimestamp(
-                (null != reportProcessTrackerDTO.getCreatedTime() ? reportProcessTrackerDTO.getCreatedTime()
-                        : LocalDateTime.now()));
+        reportProcessTracker.setCreatedTimestamp(LocalDateTime.now());
         return springReactiveWebFluxProcessTrackerRepository.save(reportProcessTracker);
     }
 
@@ -86,7 +85,14 @@ public class SpringReactiveWebFluxServiceImpl implements SpringReactiveWebFluxSe
     @Override
     public Mono<ReportFileTracker> saveReportFileTracker(ReportFileTrackerDTO reportFileTrackerDTO) {
         ReportFileTracker reportFileTracker = new ReportFileTracker();
-        reportFileTracker.setTraceId(UUID.randomUUID().toString());
+        if (null != reportFileTrackerDTO.getId()) {
+            reportFileTracker.setId(reportFileTrackerDTO.getId());
+        }
+        if(StringUtils.hasText(reportFileTrackerDTO.getTraceId())) {
+            reportFileTracker.setTraceId(reportFileTrackerDTO.getTraceId());
+        } else {
+            reportFileTracker.setTraceId(UUID.randomUUID().toString());
+        }
         reportFileTracker.setReportProcessId(reportFileTrackerDTO.getReportProcessId());
         reportFileTracker.setFileName(reportFileTrackerDTO.getFileName());
         reportFileTracker.setFileType(reportFileTrackerDTO.getFileType());
@@ -160,6 +166,18 @@ public class SpringReactiveWebFluxServiceImpl implements SpringReactiveWebFluxSe
     public Mono<byte[]> generatePDFForReportProcessFileTracker() {
         return getHistoricalRecords().collectList()
                 .map(reportProcessFileTrackerDTO -> reportProcessFilePDFGenerator.createPDF(reportProcessFileTrackerDTO));
+    }
+
+    @Override
+    public Mono<Void> deleteReportFileTracker(BigInteger id) {
+        return springReactiveWebFluxFileTrackerRepository.deleteById(id);
+    }
+
+    @Override
+    public Mono<Void> deleteReportProcessTracker(BigInteger id) {
+        Mono<ReportProcessTracker> reportProcessTrackerMono = springReactiveWebFluxProcessTrackerRepository.findById(id);
+        return reportProcessTrackerMono.flatMap(reportProcessTracker -> springReactiveWebFluxFileTrackerRepository.deleteAllByReportProcessId(reportProcessTracker.getTraceId())
+                .then(springReactiveWebFluxProcessTrackerRepository.deleteById(reportProcessTracker.getId())));
     }
 
 

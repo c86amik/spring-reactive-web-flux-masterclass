@@ -14,6 +14,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.math.BigInteger;
 import java.util.List;
 
 import static org.springframework.web.reactive.function.BodyInserters.fromValue;
@@ -115,10 +116,37 @@ public class SpringReactiveWebFluxHandler {
 
     public Mono<ServerResponse> updateReportFileTracker(ServerRequest serverRequest) {
         LOG.info("SpringReactiveWebFluxHandler -> updateReportFileTracker() operation started");
+        String traceId = serverRequest.pathVariable("traceId");
+        LOG.info("SpringReactiveWebFluxHandler -> updateReportFileTracker() traceId : {}", traceId);
         return serverRequest.bodyToMono(ReportFileTrackerDTO.class)
-                .flatMap(reportFileTrackerDTO -> springReactiveWebFluxService.saveReportFileTracker(reportFileTrackerDTO))
-                .flatMap(savedReportFileTracker -> ServerResponse.ok()
+                .flatMap(reportFileTrackerDTOOriginal -> springReactiveWebFluxService.findByReportFileTrackerTraceId(traceId)
+                        .flatMap(reportFileTrackerDTO -> {
+                            reportFileTrackerDTO.setId(reportFileTrackerDTOOriginal.getId());
+                            reportFileTrackerDTO.setTraceId(reportFileTrackerDTOOriginal.getTraceId());
+                            reportFileTrackerDTO.setReportProcessId(reportFileTrackerDTOOriginal.getReportProcessId());
+                            reportFileTrackerDTO.setFileType(reportFileTrackerDTOOriginal.getFileType());
+                            reportFileTrackerDTO.setFileName(reportFileTrackerDTOOriginal.getFileName());
+                            reportFileTrackerDTO.setCreatedBy(reportFileTrackerDTOOriginal.getCreatedBy());
+                            reportFileTrackerDTO.setCreatedTime(reportFileTrackerDTOOriginal.getCreatedTime());
+                            return springReactiveWebFluxService.saveReportFileTracker(reportFileTrackerDTO);
+                        })
+                ).flatMap(savedReportFileTracker -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(fromValue(savedReportFileTracker)));
+                        .body(fromValue(savedReportFileTracker)))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
+
+    public Mono<ServerResponse> deleteReportFileTrackerByID(ServerRequest serverRequest) {
+        BigInteger id = BigInteger.valueOf(Long.parseLong(serverRequest.pathVariable("id")));
+        LOG.info("SpringReactiveWebFluxHandler -> deleteReportFileTrackerByID() -> ID : {}", id);
+        return springReactiveWebFluxService.deleteReportFileTracker(id)
+                .then(ServerResponse.noContent().build());
+    }
+
+    public Mono<ServerResponse> deleteReportProcessTrackerByID(ServerRequest serverRequest) {
+        BigInteger id = BigInteger.valueOf(Long.parseLong(serverRequest.pathVariable("id")));
+        LOG.info("SpringReactiveWebFluxHandler -> deleteReportProcessTrackerByID -> ID : {}", id);
+        return springReactiveWebFluxService.deleteReportProcessTracker(id)
+                .then(ServerResponse.noContent().build());
     }
 }
